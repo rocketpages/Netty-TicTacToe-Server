@@ -5,11 +5,13 @@ public class OutgoingMessageBean extends MessageBean {
 	private String opponent;
 	private String gridId;
 	private boolean winner;
+	private boolean tied;
 	
-	public OutgoingMessageBean(String opponent, String grid, boolean winner) {
+	public OutgoingMessageBean(String opponent, String grid, boolean winner, boolean tied) {
 		this.opponent = opponent;
 		this.gridId = grid;
 		this.winner = winner;
+		this.tied = tied;
 	}
 	
 	public String getType() {
@@ -26,5 +28,9 @@ public class OutgoingMessageBean extends MessageBean {
 	
 	public boolean getWinner() {
 		return winner;
+	}
+	
+	public boolean getTied() {
+		return tied;
 	}
 }

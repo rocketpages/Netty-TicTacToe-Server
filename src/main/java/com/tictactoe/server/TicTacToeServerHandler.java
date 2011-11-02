@@ -13,6 +13,10 @@ import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_ORI
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Names.WEBSOCKET_PROTOCOL;
 import static org.jboss.netty.handler.codec.http.HttpHeaders.Values.WEBSOCKET;
 import static org.jboss.netty.handler.codec.http.HttpVersion.HTTP_1_1;
+import static com.tictactoe.server.message.GameOverMessageBean.Result.YOU_WIN;
+import static com.tictactoe.server.message.GameOverMessageBean.Result.TIED;
+import static com.tictactoe.server.message.TurnMessageBean.Turn.YOUR_TURN;
+import static com.tictactoe.server.message.TurnMessageBean.Turn.WAITING;
 
 import java.security.MessageDigest;
 import java.util.HashMap;
@@ -46,11 +50,11 @@ import com.google.gson.Gson;
 import com.tictactoe.game.Board;
 import com.tictactoe.game.Game;
 import com.tictactoe.game.Player;
+import com.tictactoe.server.message.GameOverMessageBean;
 import com.tictactoe.server.message.HandshakeMessageBean;
 import com.tictactoe.server.message.IncomingMessageBean;
 import com.tictactoe.server.message.OutgoingMessageBean;
 import com.tictactoe.server.message.TurnMessageBean;
-import com.tictactoe.server.message.WinnerMessageBean;
 
 /**
  * Handles a server-side channel for a multiplayer game of Tic Tac Toe.
@@ -200,8 +204,8 @@ public class TicTacToeServerHandler extends SimpleChannelUpstreamHandler {
 		
 		// If the game has begun we need to inform the players. Send them a "turn" message (either "waiting" or "your_turn")
 		if (game.getStatus() == Game.Status.IN_PROGRESS) {			
-			game.getPlayer("X").getChannel().write(new DefaultWebSocketFrame(new TurnMessageBean(TurnMessageBean.Turn.YOUR_TURN).toJson()));
-			game.getPlayer("O").getChannel().write(new DefaultWebSocketFrame(new TurnMessageBean(TurnMessageBean.Turn.WAITING).toJson()));
+			game.getPlayer("X").getChannel().write(new DefaultWebSocketFrame(new TurnMessageBean(YOUR_TURN).toJson()));
+			game.getPlayer("O").getChannel().write(new DefaultWebSocketFrame(new TurnMessageBean(WAITING).toJson()));
 		}
 	}
 	
@@ -245,16 +249,23 @@ public class TicTacToeServerHandler extends SimpleChannelUpstreamHandler {
 		// Mark the cell the player selected.
 		board.markCell(message.getGridIdAsInt(), player.getLetter());
 		
-		// Check to see if the player just won the game.		
+		// Check to see if the player just won or tied the game.		
 		boolean winner = board.isWinner(player.getLetter());
+		boolean tied = false;
+		
+		if (!winner && board.isTied()) {
+			tied = true;
+		}
 		
 		// Respond to the opponent in order to update their screen.
-		String responseToOpponent = new OutgoingMessageBean(player.getLetter().toString(), message.getGridId(), winner).toJson();		
+		String responseToOpponent = new OutgoingMessageBean(player.getLetter().toString(), message.getGridId(), winner, tied).toJson();		
 		opponent.getChannel().write(new DefaultWebSocketFrame(responseToOpponent));
 		
-		// Respond to player to let them know they won.
+		// Respond to the player to let them know they won.
 		if (winner) {
-			player.getChannel().write(new DefaultWebSocketFrame(new WinnerMessageBean().toJson()));
+			player.getChannel().write(new DefaultWebSocketFrame(new GameOverMessageBean(YOU_WIN).toJson()));
+		} else if (tied) {
+			player.getChannel().write(new DefaultWebSocketFrame(new GameOverMessageBean(TIED).toJson()));
 		}
 		
 		System.out.println(responseToOpponent);
