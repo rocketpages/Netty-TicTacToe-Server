@@ -194,7 +194,7 @@ public class TicTacToeServerHandler extends SimpleChannelUpstreamHandler {
 		Player player = new Player(ctx.getChannel());
 		
 		// Add the player to the game.
-		Game.Letter letter = game.addPlayer(player);
+		Game.PlayerLetter letter = game.addPlayer(player);
 		
 		// Add the game to the collection of games.
 		games.put(game.getId(), game);
@@ -236,8 +236,6 @@ public class TicTacToeServerHandler extends SimpleChannelUpstreamHandler {
 	private void handleWebSocketFrame(ChannelHandlerContext ctx,
 			WebSocketFrame frame) {
 		
-		System.out.println(frame.getTextData());
-		
 		Gson gson = new Gson();
 		IncomingMessageBean message = gson.fromJson(frame.getTextData(), IncomingMessageBean.class);
 		
@@ -247,15 +245,11 @@ public class TicTacToeServerHandler extends SimpleChannelUpstreamHandler {
 		Board board = game.getBoard();
 		
 		// Mark the cell the player selected.
-		board.markCell(message.getGridIdAsInt(), player.getLetter());
+		game.markCell(message.getGridIdAsInt(), player.getLetter());
 		
-		// Check to see if the player just won or tied the game.		
-		boolean winner = board.isWinner(player.getLetter());
-		boolean tied = false;
-		
-		if (!winner && board.isTied()) {
-			tied = true;
-		}
+		// Get the status for the current game.
+		boolean winner = game.isPlayerWinner(player.getLetter());
+		boolean tied = game.isTied();
 		
 		// Respond to the opponent in order to update their screen.
 		String responseToOpponent = new OutgoingMessageBean(player.getLetter().toString(), message.getGridId(), winner, tied).toJson();		
@@ -267,8 +261,6 @@ public class TicTacToeServerHandler extends SimpleChannelUpstreamHandler {
 		} else if (tied) {
 			player.getChannel().write(new DefaultWebSocketFrame(new GameOverMessageBean(TIED).toJson()));
 		}
-		
-		System.out.println(responseToOpponent);
 	}
 
 	private void sendHttpResponse(ChannelHandlerContext ctx, HttpRequest req,

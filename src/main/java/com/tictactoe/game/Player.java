@@ -2,12 +2,12 @@ package com.tictactoe.game;
 
 import org.jboss.netty.channel.Channel;
 
-import com.tictactoe.game.Game.Letter;
+import com.tictactoe.game.Game.PlayerLetter;
 
 public class Player {
 	
 	Channel channel;
-	Letter letter;
+	PlayerLetter letter;
 	
 	public Player(Channel c) {
 		channel = c;
@@ -17,11 +17,11 @@ public class Player {
 		return channel;
 	}
 	
-	public void setLetter(Letter l) {
+	public void setLetter(PlayerLetter l) {
 		letter = l;
 	}
 	
-	public Letter getLetter() {
+	public PlayerLetter getLetter() {
 		return letter;
 	}
 }
