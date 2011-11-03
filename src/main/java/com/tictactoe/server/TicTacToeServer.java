@@ -24,6 +24,6 @@ public class TicTacToeServer {
 
         bootstrap.bind(new InetSocketAddress(9000));
         
-        System.out.println("TicTacToe Server: Listening on port 8080");
+        System.out.println("TicTacToe Server: Listening on port 9000");
     }
 }

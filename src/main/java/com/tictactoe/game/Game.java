@@ -101,9 +101,8 @@ public class Game {
 		return players.values();
 	}
 	
-	public Player getPlayer(String letter) {
-		PlayerLetter currentPlayerLetter = PlayerLetter.valueOf(letter);
-		return players.get(currentPlayerLetter);
+	public Player getPlayer(PlayerLetter playerLetter) {
+		return players.get(playerLetter);
 	}
 	
 	/**
