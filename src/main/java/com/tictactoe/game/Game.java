@@ -138,7 +138,7 @@ public class Game {
 	}
 
 	/**
-	 * Convenience method to determine if the game has been tied.
+	 * Convenience method to determine if the game has been tied.(yes that's right) 
 	 */	
 	public boolean isTied() {
 		if (status == Status.TIED) {
